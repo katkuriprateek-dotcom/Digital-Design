@@ -4,7 +4,7 @@
     "xci_name": "vio_matrix",
     "component_reference": "xilinx.com:ip:vio:3.0",
     "ip_revision": "27",
-    "gen_directory": "../../../../Digital_Design.gen/sources_1/ip/vio_matrix",
+    "gen_directory": "../../../../4x4_matrix_multiplier.gen/sources_1/ip/vio_matrix",
     "parameters": {
       "component_parameters": {
         "C_PROBE_OUT255_INIT_VAL": [ { "value": "0x0", "resolve_type": "user", "format": "bitString", "usage": "all" } ],
@@ -1577,8 +1577,8 @@
         "ARCHITECTURE": [ { "value": "spartan7", "resolve_type": "generated", "usage": "all" } ],
         "BASE_BOARD_PART": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
         "BOARD_CONNECTIONS": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
-        "DEVICE": [ { "value": "xc7s100", "resolve_type": "generated", "usage": "all" } ],
-        "PACKAGE": [ { "value": "fgga676", "resolve_type": "generated", "usage": "all" } ],
+        "DEVICE": [ { "value": "xc7s15", "resolve_type": "generated", "usage": "all" } ],
+        "PACKAGE": [ { "value": "ftgb196", "resolve_type": "generated", "usage": "all" } ],
         "PREFHDL": [ { "value": "VERILOG", "resolve_type": "generated", "usage": "all" } ],
         "SILICON_REVISION": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
         "SIMULATOR_LANGUAGE": [ { "value": "MIXED", "resolve_type": "generated", "usage": "all" } ],
@@ -1590,7 +1590,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "27" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../Digital_Design.gen/sources_1/ip/vio_matrix" } ],
+        "OUTPUTDIR": [ { "value": "../../../../4x4_matrix_multiplier.gen/sources_1/ip/vio_matrix" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2025.2" } ],
@@ -1630,5 +1630,5 @@
       }
     }
   },
-  "checksum": "f2183c63"
+  "checksum": "cbe76dfd"
 }

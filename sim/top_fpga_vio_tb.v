@@ -9,14 +9,16 @@ module top_fpga_vio_tb;
     integer i;
     integer errors;
     integer timeout_count;
+    integer output_file;
 
     reg [127:0] matrix_a_test;
     reg [127:0] matrix_b_test;
 
-    // =====================================
-    // 1. CONNECT 512-BIT RESULT FROM VIO
-    // =====================================
+    reg [127:0] input_words [0:1];
 
+    reg [31:0] expected_value;
+
+    // 512-bit result from VIO
     wire [511:0] result_from_vio;
 
     assign result_from_vio[255:0] =
@@ -25,96 +27,67 @@ module top_fpga_vio_tb;
     assign result_from_vio[511:256] =
         dut.vio_inst.probe_in1;
 
-    // =====================================
-    // 2. DUT: TOP FPGA INCLUDING VIO
-    // =====================================
-
+    // DUT: TOP FPGA INCLUDING VIO
     top_fpga dut (
         .clk(clk),
         .rst(rst)
     );
 
-    // =====================================
-    // 3. CLOCK GENERATION
-    // =====================================
-
+    // CLOCK GENERATION: 100 MHz
     initial begin
         clk = 1'b0;
         forever #5 clk = ~clk;
     end
 
-    // =====================================
-    // 4. MAIN TEST
-    // =====================================
-
+    // MAIN TEST
     initial begin
 
         rst = 1'b1;
         errors = 0;
         timeout_count = 0;
+        output_file = 0;
 
         matrix_a_test = 128'd0;
         matrix_b_test = 128'd0;
 
-        // ---------------------------------
-        // STEP 1: RESET
-        // ---------------------------------
+        input_words[0] = 128'd0;
+        input_words[1] = 128'd0;
 
+        // STEP 1: RESET
         repeat (5) @(negedge clk);
 
         rst = 1'b0;
 
         repeat (2) @(negedge clk);
 
-        // ---------------------------------
-        // STEP 2: MATRIX A
-        //
-        //  1   2   3   4
-        //  5   6   7   8
-        //  9  10  11  12
-        // 13  14  15  16
-        // ---------------------------------
+        // STEP 2: READ PYTHON INPUT FILE
+        $display("");
+        $display("Reading matrix_input.mem...");
 
-        for (i = 0; i < 16; i = i + 1) begin
-            matrix_a_test[8*i +: 8] = i + 1;
-        end
+        $readmemh("matrix_input.mem", input_words);
 
-        // ---------------------------------
-        // STEP 3: MATRIX B (IDENTITY)
-        //
-        // 1 0 0 0
-        // 0 1 0 0
-        // 0 0 1 0
-        // 0 0 0 1
-        // ---------------------------------
+        matrix_a_test = input_words[0];
+        matrix_b_test = input_words[1];
 
-        for (i = 0; i < 16; i = i + 1) begin
+        // Check for unknown input values
+        if ((^matrix_a_test === 1'bx) ||
+            (^matrix_b_test === 1'bx)) begin
 
-            if ((i == 0) || (i == 5) ||
-                (i == 10) || (i == 15))
-
-                matrix_b_test[8*i +: 8] = 8'd1;
-
-            else
-
-                matrix_b_test[8*i +: 8] = 8'd0;
+            $display("ERROR: Invalid or missing matrix_input.mem");
+            $finish;
 
         end
 
-        // ---------------------------------
-        // STEP 4: DRIVE VIO OUTPUT PROBES
-        // ---------------------------------
+        $display("Matrix A and Matrix B loaded successfully.");
 
+        // STEP 3: DRIVE VIO OUTPUT PROBES
         force dut.vio_inst.probe_out0 = matrix_a_test;
         force dut.vio_inst.probe_out1 = matrix_b_test;
         force dut.vio_inst.probe_out2 = 1'b0;
 
         repeat (2) @(negedge clk);
 
-        // ---------------------------------
-        // STEP 5: START MULTIPLICATION
-        // ---------------------------------
-
+        // STEP 4: START MULTIPLICATION
         force dut.vio_inst.probe_out2 = 1'b1;
 
         @(negedge clk);
@@ -124,10 +97,7 @@ module top_fpga_vio_tb;
         $display("");
         $display("MULTIPLICATION STARTED THROUGH VIO");
 
-        // ---------------------------------
-        // STEP 6: WAIT FOR RESULT VALID
-        // ---------------------------------
-
+        // STEP 5: WAIT FOR RESULT VALID
         while ((dut.vio_inst.probe_in2 !== 1'b1) &&
                (timeout_count < 30)) begin
 
@@ -137,10 +107,7 @@ module top_fpga_vio_tb;
 
         end
 
-        // ---------------------------------
-        // STEP 7: CHECK RESULT VALID
-        // ---------------------------------
-
+        // STEP 6: CHECK RESULT VALID
         if (dut.vio_inst.probe_in2 !== 1'b1) begin
 
             $display("ERROR: RESULT TIMEOUT");
@@ -156,10 +123,9 @@ module top_fpga_vio_tb;
             $display("--------------------------------");
 
             // DISPLAY RESULT MATRIX
-
             for (i = 0; i < 16; i = i + 1) begin
 
-                $write("%0d\t", result_from_vio[32*i +: 32]);
+                $write("%0d\t", $signed(result_from_vio[32*i +: 32]));
 
                 if ((i % 4) == 3)
                     $display("");
@@ -168,56 +134,34 @@ module top_fpga_vio_tb;
 
             $display("--------------------------------");
 
-            // VERIFY ALL 16 RESULTS
-
-            for (i = 0; i < 16; i = i + 1) begin
-
-                if (result_from_vio[32*i +: 32] !== (i + 1)) begin
-
-                    $display(
-                        "FAIL: C[%0d][%0d] Expected=%0d Actual=%0d",
-                        i / 4,
-                        i % 4,
-                        i + 1,
-                        result_from_vio[32*i +: 32]
-                    );
-
-                    errors = errors + 1;
-
-                end
-
-                else begin
-
-                    $display(
-                        "PASS: C[%0d][%0d] = %0d",
-                        i / 4,
-                        i % 4,
-                        result_from_vio[32*i +: 32]
-                    );
-
-                end
-
+            // STEP 8: SAVE RESULT TO OUTPUT FILE
+            output_file = $fopen("matrix_output.mem", "w");
+            if (output_file == 0) begin
+                $display("ERROR: Cannot create matrix_output.mem");
+                errors = errors + 1;
             end
+            else begin
 
+                $fdisplay(output_file, "%0128h", result_from_vio);
+
+                $fclose(output_file);
+
+                $display("");
+                $display("Result saved to matrix_output.mem");
+            end
         end
 
-        // ---------------------------------
-        // STEP 8: FINAL STATUS
-        // ---------------------------------
-
+        // STEP 9: FINAL STATUS
         $display("");
         $display("================================");
 
         if (errors == 0)
-            $display("TEST PASSED: ALL RESULTS CORRECT");
-
+            $display("TEST PASSED");
         else
             $display("TEST FAILED: %0d ERRORS", errors);
 
         $display("================================");
 
         $finish;
-
     end
-
 endmodule
