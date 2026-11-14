@@ -1,0 +1,21 @@
+refresh_hw_vio [get_hw_vios hw_vio_1]
+
+set lo [get_property INPUT_VALUE [get_hw_probes -of_objects [get_hw_vios hw_vio_1] -filter {NAME == result_out_1}]]
+set hi [get_property INPUT_VALUE [get_hw_probes -of_objects [get_hw_vios hw_vio_1] -filter {NAME == result_out}]]
+
+set data "$hi$lo"
+
+puts "\n========== RESULT MATRIX C =========="
+
+for {set r 0} {$r < 4} {incr r} {
+    for {set c 0} {$c < 4} {incr c} {
+        set i [expr {$r*4+$c}]
+        set pos [expr {120-8*$i}]
+        set word [string range $data $pos [expr {$pos+7}]]
+        scan $word %x value
+        puts -nonewline [format "%8d" $value]
+    }
+    puts ""
+}
+
+puts "====================================="
