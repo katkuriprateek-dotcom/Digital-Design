@@ -36,17 +36,17 @@ The top-level design exposes the input and result signals through the
 
 ## Target hardware and tools
 
-| Parameter | Specification |
-| --- | --- |
-| EDA tool | AMD Xilinx Vivado 2025 |
-| FPGA family | Spartan-7 |
-| FPGA device | XC7S15 |
-| Package | FTGB196ABX2409 |
-| Board marking | D4ASM701A |
-| Constraint target string | `xc7s15ftgb196-1` |
-| Board clock constraint | 50 MHz |
-| Reset | Active-high, pin J13 |
-| Result presentation | Laptop through Vivado VIO / Tcl Console |
+| Parameter                | Specification                           |
+| ------------------------ | --------------------------------------- |
+| EDA tool                 | AMD Xilinx Vivado 2025                  |
+| FPGA family              | Spartan-7                               |
+| FPGA device              | XC7S15                                  |
+| Package                  | FTGB196ABX2409                          |
+| Board marking            | D4ASM701A                               |
+| Constraint target string | `xc7s15ftgb196-1`                     |
+| Board clock constraint   | 50 MHz                                  |
+| Reset                    | Active-high, pin J13                    |
+| Result presentation      | Laptop through Vivado VIO / Tcl Console |
 
 The XDC assigns the board clock to H11 with a 20 ns period (50 MHz) and reset
 to J13. The simulation testbench separately generates a 100 MHz clock.
@@ -71,7 +71,6 @@ to J13. The simulation testbench separately generates a 100 MHz clock.
 ├── rtl/
 │   ├── PE.v
 │   ├── matrix_skew_controller.v
-│   ├── module.v
 │   ├── result_storage.v
 │   ├── sys_array_4x4.v
 │   └── top_fpga.v
@@ -83,18 +82,17 @@ to J13. The simulation testbench separately generates a 100 MHz clock.
 
 ### HDL modules and project files
 
-| File | Purpose |
-| --- | --- |
-| `rtl/PE.v` | Signed 8-bit multiplication, 32-bit accumulation, and registered operand forwarding in one PE. |
-| `rtl/sys_array_4x4.v` | Generates the 4x4 PE grid and wires A horizontally and B vertically. |
-| `rtl/matrix_skew_controller.v` | Captures matrices, detects `start`, generates skewed array inputs, and controls the `IDLE`/`CLEAR`/`RUN`/`DONE` sequence. |
-| `rtl/result_storage.v` | Captures the 512-bit output and drives `result_valid`. |
-| `rtl/top_fpga.v` | Connects `vio_matrix`, the controller, and result storage. |
-| `rtl/module.v` | Empty placeholder module; it is not instantiated in the active datapath. |
-| `ip/vio_matrix/vio_matrix.xci` | Vivado configuration for the VIO IP used by `top_fpga`. |
-| `sim/top_fpga_vio_tb.v` | Testbench that reads `matrix_input.mem`, drives the VIO probes, waits for completion, prints results, and writes `matrix_output.mem`. |
-| `constraints/top_fpga.xdc` | Pin assignments and 50 MHz clock constraint. |
-| `bitstream/top_fpga.bit` | Included bitstream. Its build provenance and exact source revision are not recorded in this repository. |
+| File                             | Purpose                                                                                                                                   |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `rtl/PE.v`                     | Signed 8-bit multiplication, 32-bit accumulation, and registered operand forwarding in one PE.                                            |
+| `rtl/sys_array_4x4.v`          | Generates the 4x4 PE grid and wires A horizontally and B vertically.                                                                      |
+| `rtl/matrix_skew_controller.v` | Captures matrices, detects `start`, generates skewed array inputs, and controls the `IDLE`/`CLEAR`/`RUN`/`DONE` sequence.       |
+| `rtl/result_storage.v`         | Captures the 512-bit output and drives `result_valid`.                                                                                  |
+| `rtl/top_fpga.v`               | Connects `vio_matrix`, the controller, and result storage.                                                                              |
+| `ip/vio_matrix/vio_matrix.xci` | Vivado configuration for the VIO IP used by `top_fpga`.                                                                                 |
+| `sim/top_fpga_vio_tb.v`        | Testbench that reads `matrix_input.mem`, drives the VIO probes, waits for completion, prints results, and writes `matrix_output.mem`. |
+| `constraints/top_fpga.xdc`     | Pin assignments and 50 MHz clock constraint.                                                                                              |
+| `bitstream/top_fpga.bit`       | Included bitstream. Its build provenance and exact source revision are not recorded in this repository.                                   |
 
 The VIO configuration and RTL use three VIO output probes (A, B, and start)
 and four VIO input probes (two 256-bit result portions, `result_valid`, and
