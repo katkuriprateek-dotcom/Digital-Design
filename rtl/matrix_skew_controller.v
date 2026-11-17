@@ -127,21 +127,17 @@ module matrix_skew_controller (
 
                 // Matrix A: row-wise skewing
                 for (i = 0; i < 4; i = i + 1) begin
-                    if ((cycle_count >= i) &&
-                        (cycle_count <= i + 3)) begin
+                    if ((cycle_count >= i) && (cycle_count <= i + 3)) begin
                         k = cycle_count - i;
-                        a_row_in[8*i +: 8] =
-                            A_reg[8*(4*i + k) +: 8];
+                        a_row_in[8*i +: 8] = A_reg[8*(4*i + k) +: 8];
                     end
                 end
 
                 // Matrix B: column-wise skewing
                 for (i = 0; i < 4; i = i + 1) begin
-                    if ((cycle_count >= i) &&
-                        (cycle_count <= i + 3)) begin
+                    if ((cycle_count >= i) && (cycle_count <= i + 3)) begin
                         k = cycle_count - i;
-                        b_col_in[8*i +: 8] =
-                            B_reg[8*(4*k + i) +: 8];
+                        b_col_in[8*i +: 8] = B_reg[8*(4*k + i) +: 8];
                     end
                 end
             end

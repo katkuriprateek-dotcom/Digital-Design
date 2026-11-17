@@ -21,11 +21,9 @@ module top_fpga_vio_tb;
     // 512-bit result from VIO
     wire [511:0] result_from_vio;
 
-    assign result_from_vio[255:0] =
-        dut.vio_inst.probe_in0;
+    assign result_from_vio[255:0] = dut.vio_inst.probe_in0;
 
-    assign result_from_vio[511:256] =
-        dut.vio_inst.probe_in1;
+    assign result_from_vio[511:256] = dut.vio_inst.probe_in1;
 
     // DUT: TOP FPGA INCLUDING VIO
     top_fpga dut (
@@ -33,7 +31,7 @@ module top_fpga_vio_tb;
         .rst(rst)
     );
 
-    // CLOCK GENERATION: 100 MHz
+    // CLOCK: 100 MHz
     initial begin
         clk = 1'b0;
         forever #5 clk = ~clk;
@@ -98,38 +96,28 @@ module top_fpga_vio_tb;
         $display("MULTIPLICATION STARTED THROUGH VIO");
 
         // STEP 5: WAIT FOR RESULT VALID
-        while ((dut.vio_inst.probe_in2 !== 1'b1) &&
-               (timeout_count < 30)) begin
+        while ((dut.vio_inst.probe_in2 !== 1'b1) && (timeout_count < 30)) begin
 
             @(negedge clk);
-
             timeout_count = timeout_count + 1;
-
         end
 
         // STEP 6: CHECK RESULT VALID
         if (dut.vio_inst.probe_in2 !== 1'b1) begin
-
             $display("ERROR: RESULT TIMEOUT");
-
             errors = errors + 1;
-
         end
-
         else begin
-
             $display("");
             $display("RESULT MATRIX C:");
             $display("--------------------------------");
 
             // DISPLAY RESULT MATRIX
             for (i = 0; i < 16; i = i + 1) begin
-
                 $write("%0d\t", $signed(result_from_vio[32*i +: 32]));
 
                 if ((i % 4) == 3)
                     $display("");
-
             end
 
             $display("--------------------------------");
