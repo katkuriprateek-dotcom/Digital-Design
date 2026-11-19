@@ -1,25 +1,20 @@
-import serial
-import time
-
-# Change COM port according to your computer
-PORT = "COM3"
-BAUD = 9600
-
+# Python matrix input for Vivado simulation
 # Matrix A
 A = [
-    [1, 2, 3, 4],
-    [5, 6, 7, 8],
-    [9, 10, 11, 12],
-    [13, 14, 15, 16]
+    [ 1,   2 ,  3 ,  4  ],
+    [ 5,   6 ,  7 ,  8  ],
+    [ 9,   10,  11,  12 ],
+    [ 13,  14,  15,  16 ]
 ]
 
 # Matrix B
 B = [
-    [1, 2, 3, 4],
-    [5, 6, 7, 8],
-    [9, 10, 11, 12],
-    [13, 14, 15, 16]
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1]
 ]
+
 
 def validate(matrix):
     assert len(matrix) == 4
@@ -27,27 +22,29 @@ def validate(matrix):
 
     for row in matrix:
         for value in row:
+            assert isinstance(value, int)
             assert -128 <= value <= 127
 
+
+def pack_matrix(matrix):
+    packed = 0
+
+    for row in range(4):
+        for col in range(4):
+            index = row * 4 + col
+            value = matrix[row][col] & 0xFF
+            packed |= value << (8 * index)
+    return packed
+
+
+# Validate matrices
 validate(A)
 validate(B)
 
-# Convert signed values to 8-bit two's complement
-data = []
+# Pack matrices
+packed_a = pack_matrix(A)
+packed_b = pack_matrix(B)
 
-for matrix in (A, B):
-    for row in matrix:
-        for value in row:
-            data.append(value & 0xFF)
-
-assert len(data) == 32
-
-with serial.Serial(PORT, BAUD, timeout=2) as ser:
-
-    time.sleep(0.2)
-
-    ser.write(bytes(data))
-    ser.flush()
-
-    print("Matrix A and B transmitted.")
-    print("Total bytes:", len(data))
+# Print hexadecimal outputs directly to terminal
+print(f"{packed_a:032X}")
+print(f"{packed_b:032X}")
